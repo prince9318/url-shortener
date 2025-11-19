@@ -7,10 +7,13 @@ type ShortLink = {
   code: string;
   target_url: string;
   clicks?: number;
+  created_at?: string;
+  last_clicked?: string | null;
 };
 
 export default function Dashboard() {
   const [links, setLinks] = useState<ShortLink[]>([]);
+  const [filter, setFilter] = useState("");
   const [url, setUrl] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -65,6 +68,34 @@ export default function Dashboard() {
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
+
+  // Derived filtered list
+  const filteredLinks = links.filter((l) => {
+    if (!filter.trim()) return true;
+    const q = filter.toLowerCase();
+    return (
+      (l.code || "").toLowerCase().includes(q) ||
+      (l.target_url || "").toLowerCase().includes(q)
+    );
+  });
+
+  function formatLocal(ts?: string | null) {
+    if (!ts) return "Never";
+    // Ensure robust parsing of various timestamp formats
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) return String(ts);
+    const tz = process.env.NEXT_PUBLIC_TIME_ZONE || undefined;
+    return new Intl.DateTimeFormat(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZoneName: "short",
+      timeZone: tz,
+    }).format(d);
+  }
 
   // Create Short Link
   async function createLink(e: any) {
@@ -150,20 +181,29 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <h2 className="text-xl font-semibold mt-10 mb-4">Your Links</h2>
+      <div className="mt-10 mb-4 flex items-center justify-between gap-4">
+        <h2 className="text-xl font-semibold">Your Links</h2>
+        <input
+          className="input max-w-xs"
+          placeholder="Search by code or URL"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
+      </div>
 
       <table className="table">
         <thead>
           <tr className="text-left">
-            <th className="p-3">Code</th>
-            <th className="p-3">URL</th>
-            <th className="p-3">Clicks</th>
-            <th className="p-3"></th>
+            <th className="p-3">Short Code</th>
+            <th className="p-3">Target URL</th>
+            <th className="p-3">Total Clicks</th>
+            <th className="p-3">Last Clicked</th>
+            <th className="p-3">Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          {links.map((l) => (
+          {filteredLinks.map((l) => (
             <tr key={l.code} className="border-t">
               <td className="p-3">
                 <div className="flex items-center gap-2">
@@ -217,6 +257,11 @@ export default function Dashboard() {
               </td>
 
               <td className="p-3"><span className="badge">{l.clicks}</span></td>
+
+              {/* Last clicked time */}
+              <td className="p-3">
+                <span className="text-gray-700">{formatLocal(l.last_clicked)}</span>
+              </td>
 
               <td className="p-3">
                 <button

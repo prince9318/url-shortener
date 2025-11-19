@@ -3,8 +3,16 @@ import { generateCode, isValidCode, isValidUrl } from "@/lib/shortener";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const links = await db`SELECT * FROM links ORDER BY created_at DESC`;
-  return NextResponse.json(links);
+  try {
+    const links = await db`SELECT * FROM links ORDER BY created_at DESC`;
+    return NextResponse.json(links);
+  } catch (err: any) {
+    const message =
+      err?.message?.includes("DATABASE_URL")
+        ? "Database not configured. Set DATABASE_URL in .env.local."
+        : "Database error";
+    return NextResponse.json({ error: message }, { status: 503 });
+  }
 }
 
 export async function POST(request: Request) {

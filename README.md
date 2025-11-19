@@ -50,3 +50,16 @@ BASE_URL=https://your-domain.com
 For testing without deploying, you can use a tunnel service (e.g., ngrok) and set `NEXT_PUBLIC_BASE_URL` to the provided HTTPS URL.
 
 The app will use `NEXT_PUBLIC_BASE_URL` when copying short URLs in the UI and `BASE_URL`/`NEXT_PUBLIC_BASE_URL` for Open Graph/Twitter metadata.
+
+## Timezone Display
+
+By default, times are shown in the viewer’s local timezone using 24‑hour format. To force a specific timezone for display (still 24‑hour):
+
+1. Create or update `.env.local`:
+
+```
+# Examples: Asia/Kolkata, UTC, America/New_York, Europe/Berlin
+NEXT_PUBLIC_TIME_ZONE=Asia/Kolkata
+```
+
+When set, the dashboard and stats page will render timestamps using this timezone with `hour12: false`.
