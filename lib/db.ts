@@ -23,3 +23,23 @@ export const db: TemplateTag = url
   : (async () => {
       throw new Error("DATABASE_URL is missing. Set it in .env.local to use the API.");
     }) as TemplateTag;
+
+// Ensure DB schema exists (idempotent)
+let schemaReady: Promise<void> | null = null;
+export async function ensureSchema(): Promise<void> {
+  if (!url) throw new Error("DATABASE_URL is missing. Set it in .env.local to use the API.");
+  if (!schemaReady) {
+    schemaReady = (async () => {
+      await db`
+        CREATE TABLE IF NOT EXISTS links (
+          code TEXT PRIMARY KEY,
+          target_url TEXT NOT NULL,
+          clicks INTEGER NOT NULL DEFAULT 0,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          last_clicked TIMESTAMPTZ
+        )
+      `;
+    })();
+  }
+  return schemaReady;
+}

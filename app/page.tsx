@@ -211,7 +211,7 @@ export default function Dashboard() {
                     href={`/${l.code}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[color:var(--primary)] hover:underline font-medium"
+                    className="text-(--primary) hover:underline font-medium"
                   >
                     {l.code}
                   </a>
@@ -246,7 +246,7 @@ export default function Dashboard() {
                       {text.length > limit && (
                         <button
                           onClick={() => setExpanded((prev) => ({ ...prev, [l.code]: !isExpanded }))}
-                          className="ml-2 text-[color:var(--primary)] hover:underline"
+                          className="ml-2 text-(--primary) hover:underline"
                         >
                           {isExpanded ? "Hide" : "See more"}
                         </button>

@@ -1,8 +1,9 @@
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request, ctx: any) {
   try {
+    await ensureSchema();
     const { code } = await ctx.params;
     const rows = await db`SELECT * FROM links WHERE code = ${code}`;
     if (rows.length === 0) {
@@ -13,13 +14,14 @@ export async function GET(req: Request, ctx: any) {
     const message =
       err?.message?.includes("DATABASE_URL")
         ? "Database not configured. Set DATABASE_URL in .env.local."
-        : "Database error";
+        : err?.message || "Database error";
     return NextResponse.json({ error: message }, { status: 503 });
   }
 }
 
 export async function DELETE(req: Request, ctx: any) {
   try {
+    await ensureSchema();
     const { code } = await ctx.params;
     await db`DELETE FROM links WHERE code = ${code}`;
     return NextResponse.json({ ok: true });
@@ -27,7 +29,7 @@ export async function DELETE(req: Request, ctx: any) {
     const message =
       err?.message?.includes("DATABASE_URL")
         ? "Database not configured. Set DATABASE_URL in .env.local."
-        : "Database error";
+        : err?.message || "Database error";
     return NextResponse.json({ error: message }, { status: 503 });
   }
 }

@@ -1,16 +1,17 @@
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 import { generateCode, isValidCode, isValidUrl } from "@/lib/shortener";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    await ensureSchema();
     const links = await db`SELECT * FROM links ORDER BY created_at DESC`;
     return NextResponse.json(links);
   } catch (err: any) {
     const message =
       err?.message?.includes("DATABASE_URL")
         ? "Database not configured. Set DATABASE_URL in .env.local."
-        : "Database error";
+        : err?.message || "Database error";
     return NextResponse.json({ error: message }, { status: 503 });
   }
 }
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    await ensureSchema();
     // Prevent duplicating the same target URL
     const existing = await db`SELECT * FROM links WHERE target_url = ${targetUrl} LIMIT 1`;
     if (existing.length > 0) {
@@ -53,6 +55,6 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
-    return NextResponse.json({ error: "Database error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Database error" }, { status: 500 });
   }
 }

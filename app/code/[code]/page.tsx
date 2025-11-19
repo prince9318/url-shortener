@@ -28,7 +28,7 @@ export default async function StatsPage(props: any) {
         </p>
       </div>
 
-      <Link href="/" className="text-[color:var(--primary)] hover:underline block mt-5">
+      <Link href="/" className="text-(--primary) hover:underline block mt-5">
         ← Back to Dashboard
       </Link>
     </div>
