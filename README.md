@@ -34,3 +34,19 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Public base URL
+
+To make your short links copy/share as a public URL (not `localhost`), set a base URL in environment variables.
+
+1. Create a `.env.local` file in the project root.
+2. Add one of the following:
+
+```
+NEXT_PUBLIC_BASE_URL=https://your-domain.com
+# Optional server-side canonical base
+BASE_URL=https://your-domain.com
+```
+
+For testing without deploying, you can use a tunnel service (e.g., ngrok) and set `NEXT_PUBLIC_BASE_URL` to the provided HTTPS URL.
+
+The app will use `NEXT_PUBLIC_BASE_URL` when copying short URLs in the UI and `BASE_URL`/`NEXT_PUBLIC_BASE_URL` for Open Graph/Twitter metadata.
