@@ -34,6 +34,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
 ## Public base URL
 
 To make your short links copy/share as a public URL (not `localhost`), set a base URL in environment variables.
@@ -61,5 +62,20 @@ By default, times are shown in the viewer’s local timezone using 24‑hour for
 # Examples: Asia/Kolkata, UTC, America/New_York, Europe/Berlin
 NEXT_PUBLIC_TIME_ZONE=Asia/Kolkata
 ```
+
+## Database (Postgres / Neon)
+
+This project uses a Postgres-compatible database (for example, Neon). To configure it locally:
+
+1. Create a `.env.local` file in the project root (you can copy `.env.local.example`).
+2. Set `DATABASE_URL` to your Postgres connection string. Format:
+
+```
+DATABASE_URL=postgres://<username>:<password>@<host>:5432/<database>
+```
+
+3. Restart the dev server if it's running so Next.js picks up the new env vars.
+
+If you see an authentication error like "password authentication failed for user 'neondb_owner'", double-check the username and password in your connection string and ensure the database allows connections from your environment.
 
 When set, the dashboard and stats page will render timestamps using this timezone with `hour12: false`.
