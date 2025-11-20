@@ -211,7 +211,7 @@ export default function Dashboard() {
         <tbody>
           {filteredLinks.map((l) => (
             <tr key={l.code} className="border-t">
-              <td className="p-3">
+              <td className="p-3" data-label="Short Code">
                 <div className="flex items-center gap-2">
                   <a
                     href={`/${l.code}`}
@@ -250,7 +250,7 @@ export default function Dashboard() {
               </td>
 
               {/* Original URL with See more/Hide toggle */}
-              <td className="p-3 max-w-xs">
+              <td className="p-3 max-w-xs" data-label="Target URL">
                 {(() => {
                   const text: string = l.target_url || "";
                   const limit = 60;
@@ -281,18 +281,18 @@ export default function Dashboard() {
                 })()}
               </td>
 
-              <td className="p-3">
+              <td className="p-3" data-label="Total Clicks">
                 <span className="badge">{l.clicks}</span>
               </td>
 
               {/* Last clicked time */}
-              <td className="p-3">
+              <td className="p-3" data-label="Last Clicked">
                 <span className="text-gray-700">
                   {formatLocal(l.last_clicked)}
                 </span>
               </td>
 
-              <td className="p-3">
+              <td className="p-3" data-label="Actions">
                 <button
                   onClick={() => deleteLink(l.code)}
                   className="inline-flex items-center gap-1 text-red-600 hover:underline"
@@ -317,7 +317,7 @@ export default function Dashboard() {
 
           {links.length === 0 && (
             <tr>
-              <td colSpan={4} className="text-center py-4 text-gray-500">
+              <td colSpan={5} className="text-center py-4 text-gray-500">
                 No links created yet.
               </td>
             </tr>

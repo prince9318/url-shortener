@@ -15,11 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-linear-to-b from-(--bg-start)] to-(--bg-end)] text-gray-900">
-        <header className="sticky top-0 z-40 backdrop-blur supports-backdrop-filter:bg-white/60 border-b border-gray-200">
+      <body className="app-bg text-gray-900">
+        <header className="sticky top-0 z-40 backdrop-blur site-header border-b border-gray-200">
           <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-(--brand)] text-white font-bold">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg brand-badge text-white font-bold">
                 T
               </span>
               <span className="text-lg font-semibold tracking-tight">

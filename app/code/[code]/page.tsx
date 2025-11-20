@@ -21,10 +21,36 @@ export default async function StatsPage(props: any) {
           <strong>Clicks:</strong> {link.clicks}
         </p>
         <p>
-          <strong>Created:</strong> {new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: (process.env.NEXT_PUBLIC_TIME_ZONE || process.env.BASE_TIME_ZONE || undefined) }).format(new Date(link.created_at))}
+          <strong>Created:</strong>{" "}
+          {new Intl.DateTimeFormat(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone:
+              process.env.NEXT_PUBLIC_TIME_ZONE ||
+              process.env.BASE_TIME_ZONE ||
+              undefined,
+          }).format(new Date(link.created_at))}
         </p>
         <p>
-          <strong>Last Clicked:</strong> {link.last_clicked ? new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: (process.env.NEXT_PUBLIC_TIME_ZONE || process.env.BASE_TIME_ZONE || undefined) }).format(new Date(link.last_clicked)) : "Never"}
+          <strong>Last Clicked:</strong>{" "}
+          {link.last_clicked
+            ? new Intl.DateTimeFormat(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+                timeZone:
+                  process.env.NEXT_PUBLIC_TIME_ZONE ||
+                  process.env.BASE_TIME_ZONE ||
+                  undefined,
+              }).format(new Date(link.last_clicked))
+            : "Never"}
         </p>
       </div>
 

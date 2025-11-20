@@ -26,13 +26,13 @@ export default function LinkTable({
       <tbody>
         {links.map((l) => (
           <tr key={l.code} className="border-t">
-            <td className="p-3">
+            <td className="p-3" data-label="Short Code">
               <div className="flex items-center gap-2">
                 <a
                   href={`/${l.code}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-(--primary)] hover:underline font-medium"
+                  className="text-(--primary) hover:underline font-medium"
                 >
                   {l.code}
                 </a>
@@ -63,7 +63,7 @@ export default function LinkTable({
               </div>
             </td>
 
-            <td className="p-3 max-w-xs">
+            <td className="p-3 max-w-xs" data-label="Target URL">
               {(() => {
                 const text: string = l.target_url || "";
                 const limit = 60;
@@ -94,11 +94,11 @@ export default function LinkTable({
               })()}
             </td>
 
-            <td className="p-3">
+            <td className="p-3" data-label="Clicks">
               <span className="badge">{l.clicks}</span>
             </td>
 
-            <td className="p-3">
+            <td className="p-3" data-label="Actions">
               <button
                 onClick={() => onDelete(l.code)}
                 className="inline-flex items-center gap-1 text-red-600 hover:underline"
