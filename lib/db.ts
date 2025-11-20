@@ -1,35 +1,45 @@
 // lib/db.ts
+
+// Import Neon serverless client
 import { neon } from "@neondatabase/serverless";
 
+// Get database URL from environment variables
 const url = process.env.DATABASE_URL;
+
 if (!url) {
-  // Surface a clear warning in development when DB is not configured
+  // Warn developers if DB URL is missing (helps during development)
   console.warn(
     "DATABASE_URL is not set. API endpoints will fail until configured."
   );
 }
 
-// Always return an array of rows, normalizing Neon responses
+// Define general row type returned from DB queries
 type Row = Record<string, any>;
+
+// Define template tag type for SQL queries
 type TemplateTag = (
   strings: TemplateStringsArray,
   ...values: any[]
 ) => Promise<Row[]>;
 
+// Export `db` function which runs SQL queries
 export const db: TemplateTag = url
-  ? async (strings: TemplateStringsArray, ...values: any[]): Promise<Row[]> => {
+  ? async (strings, ...values): Promise<Row[]> => {
+      // Create Neon SQL executor using the URL
       const sql = neon(url) as any;
+
+      // Execute SQL query
       const res = await sql(strings, ...values);
-      // Neon may return an array directly or an object with .rows
-      if (Array.isArray(res)) return res as Row[];
+
+      // Normalize Neon results (sometimes array, sometimes object)
+      if (Array.isArray(res)) return res;
       if (res && typeof res === "object" && "rows" in res)
-        return (res.rows as Row[]) ?? [];
+        return res.rows ?? [];
+
       return [];
     }
   : ((): TemplateTag => {
-      // Development in-memory fallback so the UI and API remain usable
-      // when `DATABASE_URL` is not configured. This avoids 503s while
-      // developing the frontend. In production we expect a real DB.
+      // If DATABASE_URL is missing and not in development, throw error
       if (process.env.NODE_ENV !== "development") {
         return (async () => {
           throw new Error(
@@ -38,12 +48,11 @@ export const db: TemplateTag = url
         }) as TemplateTag;
       }
 
+      // In-memory database fallback (only for development without DB)
       const store: Row[] = [];
 
-      const tag: TemplateTag = async (
-        strings: TemplateStringsArray,
-        ...values: any[]
-      ) => {
+      // Mock SQL tag for development
+      const tag: TemplateTag = async (strings, ...values) => {
         const sql = strings.join("${}").trim().toUpperCase();
 
         // SELECT all links
@@ -58,21 +67,21 @@ export const db: TemplateTag = url
         // SELECT by target_url
         if (/SELECT \* FROM LINKS WHERE TARGET_URL/.test(sql)) {
           const target = values[0];
-          const found = store.filter((r) => r.target_url === target);
-          return found;
+          return store.filter((r) => r.target_url === target);
         }
 
         // SELECT by code
         if (/SELECT \* FROM LINKS WHERE CODE/.test(sql)) {
           const code = values[0];
-          const found = store.filter((r) => r.code === code);
-          return found;
+          return store.filter((r) => r.code === code);
         }
 
-        // INSERT INTO links (code, target_url) VALUES (${shortCode}, ${targetUrl}) RETURNING *
+        // INSERT link
         if (sql.startsWith("INSERT INTO LINKS")) {
           const code = values[0];
           const target_url = values[1];
+
+          // Check duplicate code
           const existing = store.find((r) => r.code === code);
           if (existing) {
             const err: any = new Error(
@@ -81,6 +90,8 @@ export const db: TemplateTag = url
             err.code = "23505";
             throw err;
           }
+
+          // Create new link object
           const row: Row = {
             code,
             target_url,
@@ -88,33 +99,39 @@ export const db: TemplateTag = url
             created_at: new Date().toISOString(),
             last_clicked: null,
           };
+
+          // Save in in-memory store
           store.push(row);
           return [row];
         }
 
-        // DELETE FROM links WHERE code = ${code}
+        // DELETE link
         if (/DELETE FROM LINKS WHERE CODE/.test(sql)) {
           const code = values[0];
-          const idx = store.findIndex((r) => r.code === code);
-          if (idx !== -1) store.splice(idx, 1);
+          const index = store.findIndex((r) => r.code === code);
+          if (index !== -1) store.splice(index, 1);
           return [];
         }
 
-        // Default: return empty
+        // Default empty fallback
         return [];
       };
 
       return tag;
     })();
 
-// Ensure DB schema exists (idempotent)
+// Holds schema initialization promise to prevent duplicate creation
 let schemaReady: Promise<void> | null = null;
+
+// Ensure the DB schema exists
 export async function ensureSchema(): Promise<void> {
   if (!url)
     throw new Error("DATABASE_URL is missing. Set it in .env to use the API.");
+
   if (!schemaReady) {
     schemaReady = (async () => {
       try {
+        // Create links table if not exists
         await db`
           CREATE TABLE IF NOT EXISTS links (
             code TEXT PRIMARY KEY,
@@ -125,8 +142,9 @@ export async function ensureSchema(): Promise<void> {
           )
         `;
       } catch (err: any) {
-        // Surface a clearer, actionable message for auth/connection errors
         const msg = err?.message || String(err);
+
+        // Handle DB authentication issues with clearer error message
         if (
           msg.toLowerCase().includes("password authentication failed") ||
           msg.toLowerCase().includes("authentication failed")
@@ -135,9 +153,12 @@ export async function ensureSchema(): Promise<void> {
             `Database authentication failed: ${msg}. Check your DATABASE_URL in .env (username/password).`
           );
         }
+
+        // Re-throw other errors
         throw err;
       }
     })();
   }
+
   return schemaReady;
 }

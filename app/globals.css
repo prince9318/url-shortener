@@ -112,6 +112,14 @@ body {
   @apply bg-[var(--brand)] text-white;
 }
 
+/* Ensure long, unbroken strings (like long URLs) wrap inside their cell */
+.wrap-break-word {
+  /* Break long words/URLs rather than overflowing into other columns */
+  overflow-wrap: anywhere; /* modern, breaks without spaces */
+  word-break: break-word;  /* legacy support */
+  white-space: normal;     /* allow wrapping */
+}
+
 /* Responsive table -> card transformation on small screens */
 @media (max-width: 768px) {
   .table {

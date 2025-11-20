@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
+// Type for each short link item
 type ShortLink = {
   code: string;
   target_url: string;
@@ -12,28 +13,29 @@ type ShortLink = {
 };
 
 export default function Dashboard() {
-  const [links, setLinks] = useState<ShortLink[]>([]);
-  const [filter, setFilter] = useState("");
-  const [url, setUrl] = useState("");
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const clicksRef = useRef<Record<string, number>>({});
+  // State variables
+  const [links, setLinks] = useState<ShortLink[]>([]); // All links
+  const [filter, setFilter] = useState(""); // Search filter
+  const [url, setUrl] = useState(""); // Target URL input
+  const [code, setCode] = useState(""); // Custom code input
+  const [loading, setLoading] = useState(false); // Loader
+  const [error, setError] = useState(""); // Error message
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({}); // URL expand/collapse
+  const clicksRef = useRef<Record<string, number>>({}); // Track previous click counts
 
-  // Load all links
+  // Fetch all links from API
   async function fetchLinks() {
     try {
       const res = await fetch("/api/link", { cache: "no-store" });
+
       if (!res.ok) {
-        // Non-JSON or error response; surface and bail
-        const text = await res.text();
+        const text = await res.text(); // Handle non-JSON responses
         console.error("/api/link error", res.status, text);
         toast.error("Failed to refresh links");
         return;
       }
 
-      // Some environments may return empty body; guard JSON parsing
+      // Parse JSON safely
       let data: ShortLink[] = [];
       try {
         data = await res.json();
@@ -42,10 +44,13 @@ export default function Dashboard() {
         toast.error("Invalid response while refreshing links");
         return;
       }
+
       setLinks(data);
-      // Detect click count increases
+
+      // Detect increased click counts and show a toast
       const prev = clicksRef.current;
       const next: Record<string, number> = {};
+
       data.forEach((l) => {
         next[l.code] = l.clicks || 0;
         if (prev[l.code] != null && (l.clicks || 0) > prev[l.code]) {
@@ -53,6 +58,7 @@ export default function Dashboard() {
           toast.success(`Clicks updated for ${l.code} (+${diff})`);
         }
       });
+
       clicksRef.current = next;
     } catch (e) {
       console.error("Failed to fetch links", e);
@@ -60,6 +66,7 @@ export default function Dashboard() {
     }
   }
 
+  // Load links on mount + refresh when tab gets focus
   useEffect(() => {
     fetchLinks();
     function handleFocus() {
@@ -69,7 +76,7 @@ export default function Dashboard() {
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
-  // Derived filtered list
+  // Filter links by code or URL
   const filteredLinks = links.filter((l) => {
     if (!filter.trim()) return true;
     const q = filter.toLowerCase();
@@ -79,12 +86,13 @@ export default function Dashboard() {
     );
   });
 
+  // Format timestamps into readable local date/time
   function formatLocal(ts?: string | null) {
     if (!ts) return "Never";
-    // Ensure robust parsing of various timestamp formats
     const d = new Date(ts);
     if (Number.isNaN(d.getTime())) return String(ts);
     const tz = process.env.NEXT_PUBLIC_TIME_ZONE || undefined;
+
     return new Intl.DateTimeFormat(undefined, {
       year: "numeric",
       month: "short",
@@ -97,7 +105,7 @@ export default function Dashboard() {
     }).format(d);
   }
 
-  // Create Short Link
+  // Create a new short link
   async function createLink(e: any) {
     e.preventDefault();
     setError("");
@@ -117,14 +125,14 @@ export default function Dashboard() {
       return;
     }
 
-    setUrl("");
+    setUrl(""); // Reset form
     setCode("");
     setLoading(false);
     toast.success("Short URL created");
-    fetchLinks();
+    fetchLinks(); // Refresh list
   }
 
-  // Delete Short Link
+  // Delete a short link using its code
   async function deleteLink(c: string) {
     const res = await fetch(`/api/link/${c}`, { method: "DELETE" });
     if (res.ok) {
@@ -154,7 +162,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Create link form */}
+          {/* Form to create a link */}
           <form onSubmit={createLink} className="card flex flex-col gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -168,6 +176,7 @@ export default function Dashboard() {
                 required
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Custom code (optional)
@@ -179,14 +188,17 @@ export default function Dashboard() {
                 onChange={(e) => setCode(e.target.value)}
               />
             </div>
+
             <button className="btn-primary" disabled={loading} type="submit">
               {loading ? "Creating..." : "Create Link"}
             </button>
+
             {error && <p className="text-red-600 text-sm">{error}</p>}
           </form>
         </div>
       </section>
 
+      {/* Search + table heading */}
       <div className="mt-10 mb-4 flex items-center justify-between gap-4">
         <h2 className="text-xl font-semibold">Your Links</h2>
         <input
@@ -197,6 +209,7 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* Links table */}
       <table className="table">
         <thead>
           <tr className="text-left">
@@ -211,8 +224,10 @@ export default function Dashboard() {
         <tbody>
           {filteredLinks.map((l) => (
             <tr key={l.code} className="border-t">
+              {/* Short code cell */}
               <td className="p-3" data-label="Short Code">
                 <div className="flex items-center gap-2">
+                  {/* Link preview */}
                   <a
                     href={`/${l.code}`}
                     target="_blank"
@@ -221,6 +236,8 @@ export default function Dashboard() {
                   >
                     {l.code}
                   </a>
+
+                  {/* Copy button */}
                   <button
                     onClick={() =>
                       navigator.clipboard
@@ -249,19 +266,21 @@ export default function Dashboard() {
                 </div>
               </td>
 
-              {/* Original URL with See more/Hide toggle */}
-              <td className="p-3 max-w-xs" data-label="Target URL">
+              {/* Target URL with See more/ Hide toggle */}
+              <td className="p-3 align-top" data-label="Target URL">
                 {(() => {
                   const text: string = l.target_url || "";
                   const limit = 60;
                   const isExpanded = !!expanded[l.code];
+
                   const shown = isExpanded
                     ? text
                     : text.length > limit
                     ? `${text.slice(0, limit)}…`
                     : text;
+
                   return (
-                    <span>
+                    <div className="wrap-break-word">
                       {shown}
                       {text.length > limit && (
                         <button
@@ -276,27 +295,30 @@ export default function Dashboard() {
                           {isExpanded ? "Hide" : "See more"}
                         </button>
                       )}
-                    </span>
+                    </div>
                   );
                 })()}
               </td>
 
+              {/* Click count */}
               <td className="p-3" data-label="Total Clicks">
                 <span className="badge">{l.clicks}</span>
               </td>
 
-              {/* Last clicked time */}
+              {/* Last click time */}
               <td className="p-3" data-label="Last Clicked">
                 <span className="text-gray-700">
                   {formatLocal(l.last_clicked)}
                 </span>
               </td>
 
+              {/* Delete button */}
               <td className="p-3" data-label="Actions">
                 <button
                   onClick={() => deleteLink(l.code)}
                   className="inline-flex items-center gap-1 text-red-600 hover:underline"
                 >
+                  {/* Delete icon */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -315,6 +337,7 @@ export default function Dashboard() {
             </tr>
           ))}
 
+          {/* Empty state */}
           {links.length === 0 && (
             <tr>
               <td colSpan={5} className="text-center py-4 text-gray-500">

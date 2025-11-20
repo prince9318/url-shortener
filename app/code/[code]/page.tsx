@@ -4,7 +4,10 @@ import Link from "next/link";
 export default async function StatsPage(props: any) {
   const { code } = await props.params;
 
+  // Fetch short link record by code
   const rows = await db`SELECT * FROM links WHERE code = ${code}`;
+
+  // Show simple fallback if code does not exist
   if (rows.length === 0) return <div className="p-10">Not found</div>;
 
   const link = rows[0];
@@ -17,9 +20,12 @@ export default async function StatsPage(props: any) {
         <p>
           <strong>Target URL:</strong> {link.target_url}
         </p>
+
         <p>
           <strong>Clicks:</strong> {link.clicks}
         </p>
+
+        {/* Formats creation timestamp using optional timezone env */}
         <p>
           <strong>Created:</strong>{" "}
           {new Intl.DateTimeFormat(undefined, {
@@ -35,6 +41,8 @@ export default async function StatsPage(props: any) {
               undefined,
           }).format(new Date(link.created_at))}
         </p>
+
+        {/* Shows last-click time or fallback if never clicked */}
         <p>
           <strong>Last Clicked:</strong>{" "}
           {link.last_clicked

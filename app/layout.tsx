@@ -4,6 +4,7 @@ import ToastClient from "@/components/ToastClient";
 import Link from "next/link";
 
 export const metadata: Metadata = {
+  // Default metadata for all pages
   title: "TinyLink – URL Shortener",
   description: "Create your own short links like Bitly",
 };
@@ -16,8 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="app-bg text-gray-900">
+        {/* App Header – navigation and branding */}
         <header className="sticky top-0 z-40 backdrop-blur site-header border-b border-gray-200">
           <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+            {/* Brand / Home Link */}
             <Link href="/" className="flex items-center gap-2">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg brand-badge text-white font-bold">
                 T
@@ -26,6 +29,8 @@ export default function RootLayout({
                 TinyLink
               </span>
             </Link>
+
+            {/* Main Navigation */}
             <nav className="flex items-center gap-6 text-sm">
               <a href="/" className="text-gray-700 hover:text-gray-900">
                 Dashboard
@@ -33,6 +38,8 @@ export default function RootLayout({
               <a href="/healthz" className="text-gray-700 hover:text-gray-900">
                 Health
               </a>
+
+              {/* External inspiration link (Bitly) */}
               <a
                 href="https://bitly.com/"
                 target="_blank"
@@ -57,8 +64,13 @@ export default function RootLayout({
           </div>
         </header>
 
+        {/* Page Content */}
         <main className="mx-auto max-w-6xl px-4">{children}</main>
+
+        {/* Toast notifications (client-side) */}
         <ToastClient />
+
+        {/* Footer */}
         <footer className="mx-auto max-w-6xl px-4 py-10 text-sm text-gray-600">
           <div className="flex items-center justify-center">
             <p>
